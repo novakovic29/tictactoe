@@ -1,161 +1,185 @@
 /* =========================
    1) RESET & GRUNDWERTE
    ========================= */
-   * {
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-  }
-  
-  /* 
-    HTML & BODY:
-    - Füllen den gesamten Bildschirm aus
-    - Kein Scrollen möglich
+}
+
+/* HTML & BODY:
+     - Füllen den gesamten Bildschirm
+     - Kein Scrollen
   */
-  html, body {
+html,
+body {
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Verhindert Scrollbalken */
-  }
-  
-  /* Der Body wird zum flexiblen Container,
-     zentriert den Inhalt und hat einen
-     radialen Farbverlauf als Hintergrund.
-  */
-  body {
-    font-family: 'Roboto', sans-serif; /* Optional, du kannst andere Fonts wählen */
+    overflow: hidden;
+}
+
+/* BODY als flexibler Container, zentriert */
+body {
+    font-family: 'Roboto', sans-serif;
+    /* oder andere Schriftart */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-  
-    /* Radialer Farbverlauf: Hellblau in der Mitte, dunkelblau außen */
+
+    /* Radialer Farbverlauf (Hintergrund) */
     background: radial-gradient(circle at center, #75abeb 0%, #5563DE 100%);
-    /* Keine extra Margins/Paddings hier, 
-       damit wir den Screen optimal nutzen */
-  }
-  
-  /* =========================
+}
+
+/* =========================
      2) ÜBERSCHRIFT (H1)
      ========================= */
-  h1 {
+h1 {
     color: #fff;
     font-weight: 700;
-    margin-top: 10px;   /* kleiner Abstand oben */
+    margin-top: 10px;
     margin-bottom: 20px;
     text-align: center;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-  }
-  
-  /* =========================
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================
      3) GAME-CONTAINER
      ========================= */
-  /* Glasmorphismus-Style: halbtransparenter Hintergrund,
-     weiche Rundung, Unschärfe, Schatten */
-  .game-container {
+/* Glasmorphismus-Style */
+.game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;         /* etwas Abstand zwischen Board und Info */
-  
-    background: rgba(255,255,255,0.15); /* leichte Transparenz */
-    border: 1px solid rgba(255,255,255,0.3);
+
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 16px;
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
     padding: 20px;
-  }
-  
-  /* =========================
+    gap: 20px;
+}
+
+/* =========================
      4) BOARD
      ========================= */
-  /* 
-     Wichtig für das responsive Verhalten:
-     - 90% der vmin -> füllt meist den Bildschirm gut
-     - max-width/height = 600px, damit es auf großen Screens nicht riesig wird
+/* 
+     Responsive über vmin, 
+     begrenzt auf 600x600 px
   */
   .board {
+    position: relative; /* Wichtig für die Positionierung der Gewinnlinie */
     width: 90vmin;
     height: 90vmin;
     max-width: 600px;
     max-height: 600px;
-  
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 8px;
-    padding: 10px; /* optionaler innerer Rand */
+    padding: 10px;
   }
-  
-  /* =========================
+
+/* =========================
      5) ZELLEN
      ========================= */
-  /* 
-     - Dezenter Verlauf, Rundung, Schatten
-     - Schrift groß und fett
-     - Kein extra line-height (außer 1), damit X/O die Zelle nicht aufbläht
+/* 
+     Nur Hintergrund/Rahmen; 
+     Zeichen kommt ins <span class="mark"> 
   */
-  .cell {
+.cell {
     background: linear-gradient(135deg, #f0f0f0, #eaeaea);
     border-radius: 10px;
     border: 1px solid #ccc;
-  
+
+    /* Layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cell:hover {
+    background: linear-gradient(135deg, #e2e2e2, #dddddd);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================
+     6) ANIMATION FÜR X/O
+     ========================= */
+/* Keyframes: "Pop-in"-Effekt */
+@keyframes placeMark {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.2) rotate(10deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* =========================
+     7) MARK (X / O)
+     ========================= */
+/* Basis-Style für das Span */
+.mark {
+    display: inline-block;
+    /* Ermöglicht transform-Animation */
     font-size: 2.5rem;
     line-height: 1;
     font-weight: 700;
     user-select: none;
-    cursor: pointer;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    /* Leichter Schatten */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-  }
-  .cell:hover {
-    background: linear-gradient(135deg, #e2e2e2, #dddddd);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  }
-  
-  /* =========================
-     6) X / O STYLING
-     ========================= */
-  /* Kräftige Farben + Glow-Effekt */
-  .x-cell {
+    /* Kein Text-Markieren */
+}
+
+/* X = Rot + Glow + Pop-in */
+.mark.x {
     color: #ff3030;
     text-shadow:
-      0 0 6px rgba(255,48,48,0.7),
-      0 0 12px rgba(255,48,48,0.5);
-  }
-  .o-cell {
+        0 0 6px rgba(255, 48, 48, 0.7),
+        0 0 12px rgba(255, 48, 48, 0.5);
+
+    animation: placeMark 0.3s ease forwards;
+}
+
+/* O = Blau + Glow + Pop-in */
+.mark.o {
     color: #3b79ff;
     text-shadow:
-      0 0 6px rgba(59,121,255,0.7),
-      0 0 12px rgba(59,121,255,0.5);
-  }
-  
-  /* =========================
-     7) INFO-BEREICH
+        0 0 6px rgba(59, 121, 255, 0.7),
+        0 0 12px rgba(59, 121, 255, 0.5);
+
+    animation: placeMark 0.3s ease forwards;
+}
+
+/* =========================
+     8) INFO-BEREICH
      ========================= */
-  .info {
+.info {
     text-align: center;
-  }
-  
-  #status {
+}
+
+#status {
     font-size: 1.3rem;
     color: #fff;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     margin-bottom: 12px;
-  }
-  
-  /* =========================
-     8) BUTTON
+}
+
+/* =========================
+     9) BUTTON
      ========================= */
-  #resetBtn {
+#resetBtn {
     background-color: #5563DE;
     color: #fff;
     border: none;
@@ -164,28 +188,46 @@
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-  
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  #resetBtn:hover {
+}
+
+#resetBtn:hover {
     background-color: #3E4ABC;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ... dein bisheriger CSS-Code ... */
+
+/* Das Gewinn-Linien-Element */
+
+
+#winLine {
+    position: absolute; /* Wichtig: Absolute Positionierung relativ zum .board */
+    top: 50%;           /* Startet in der vertikalen Mitte */
+    left: 50%;          /* Startet in der horizontalen Mitte */
+    width: 100%;        /* Sollte die gesamte Breite des Boards abdecken */
+    height: 6px;        /* Dicke der Linie */
+    background-color: rgba(19, 209, 120, 0.8); /* Farbe der Linie */
+    transform-origin: center center; /* Drehpunkt in der Mitte */
+    display: none;      /* Standardmäßig unsichtbar */
+    border-radius: 3px; /* Leicht abgerundete Ecken */
+    z-index: 99;        /* Über den Zellen */
   }
-  
-  /* =========================
-     9) OPTIONAL: MEDIA QUERIES
+
+
+/* =========================
+     10) MEDIA QUERY (optional)
      ========================= */
-  /* 
-     Wenn du willst, kannst du für extrem kleine 
-     Bildschirme nochmal anpassen, z.B. Schriftgröße:
-  */
-  @media (max-width: 320px) {
-    .cell {
-      font-size: 2rem;
+/* Für sehr kleine Bildschirme (max-width: 320px), 
+     könntest du Schriftgrößen noch etwas runtersetzen */
+@media (max-width: 320px) {
+    .mark {
+        font-size: 2rem;
     }
+
     #status {
-      font-size: 1.1rem;
+        font-size: 1.1rem;
     }
-  }
-  
+}

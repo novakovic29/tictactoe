@@ -1,126 +1,158 @@
-// Array mit 9 Einträgen für die Felder (X, O oder null)
+// Spielfeld-Array
 let fields = [null, null, null, null, null, null, null, null, null];
 
-// Aktueller Spieler: X oder O
+// Aktueller Spieler
 let currentPlayer = "X";
 
-// Zeigt an, ob das Spiel noch läuft
+// Spiel noch aktiv?
 let gameActive = true;
 
-// HTML-Elemente referenzieren
+// Referenzen
 const statusText = document.getElementById("status");
+const winLineDiv = document.getElementById("winLine");
 
 // Mögliche Gewinnkombinationen
 const winningConditions = [
-    [0, 1, 2], // Erste Reihe
-    [3, 4, 5], // Zweite Reihe
-    [6, 7, 8], // Dritte Reihe
-    [0, 3, 6], // Erste Spalte
-    [1, 4, 7], // Zweite Spalte
-    [2, 5, 8], // Dritte Spalte
-    [0, 4, 8], // Diagonale (links oben -> rechts unten)
-    [2, 4, 6]  // Diagonale (rechts oben -> links unten)
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
 ];
 
 function init() {
-    render();
+  render();
 }
 
-/**
- * Rendert das komplette Spielfeld basierend auf dem Array "fields".
- * Jeder Eintrag des Arrays wird in das entsprechende .cell geschrieben.
- */
+/** Spielfeld aktualisieren */
 function render() {
-    for (let i = 0; i < fields.length; i++) {
-      const cell = document.querySelector(`.cell[data-index="${i}"]`);
-  
-      // Textinhalt setzen (X, O oder leer)
-      cell.textContent = fields[i] === null ? "" : fields[i];
-  
-      // Zuvor zugewiesene Klassen entfernen, damit sich nichts überlappt:
-      cell.classList.remove("x-cell", "o-cell");
-  
-      // Wenn das Feld ein X oder O enthält, fügen wir die passende Klasse hinzu:
-      if (fields[i] === "X") {
-        cell.classList.add("x-cell");
-      } else if (fields[i] === "O") {
-        cell.classList.add("o-cell");
-      }
+  for (let i = 0; i < fields.length; i++) {
+    const cell = document.querySelector(`.cell[data-index="${i}"]`);
+    const markSpan = cell.querySelector(".mark");
+
+    let mark = fields[i] === null ? "" : fields[i];
+    markSpan.textContent = mark;
+
+    // Animation-Klassen anpassen
+    markSpan.classList.remove("x", "o");
+    if (mark === "X") {
+      markSpan.classList.add("x");
+    } else if (mark === "O") {
+      markSpan.classList.add("o");
     }
+  }
+}
+
+/** Klick in eine Zelle */
+function handleCellClick(index) {
+  if (!gameActive || fields[index] !== null) return;
+
+  fields[index] = currentPlayer;
+  render();
+  checkGameStatus();
+
+  if (gameActive) {
+    currentPlayer = (currentPlayer === "X") ? "O" : "X";
+    statusText.textContent = `Spieler ${currentPlayer} ist am Zug`;
+  }
+}
+
+/** Sieg oder Unentschieden prüfen */
+function checkGameStatus() {
+  let roundWon = false;
+  let winningCombo = null; // Merken, welche Combo gewinnt
+
+  for (let combo of winningConditions) {
+    const [a, b, c] = combo;
+    if (
+      fields[a] !== null &&
+      fields[a] === fields[b] &&
+      fields[b] === fields[c]
+    ) {
+      roundWon = true;
+      winningCombo = combo; // Speichere die Kombination
+      break;
+    }
+  }
+
+  if (roundWon) {
+    statusText.textContent = `Spieler ${currentPlayer} hat gewonnen!`;
+    gameActive = false;
+
+    // Zeige die Gewinnlinie
+    showWinLine(winningCombo);
+
+    return;
+  }
+
+  // Unentschieden
+  if (!fields.includes(null)) {
+    statusText.textContent = "Unentschieden!";
+    gameActive = false;
+  }
+}
+
+function showWinLine(combo) {
+    // Linie sichtbar machen
+    winLineDiv.style.display = "block";
+  
+    // Standardwert: Linie in der Mitte
+    let transformValue = "translate(-50%, -50%) rotate(0deg)";
+  
+    switch (combo.toString()) {
+      // Obere Reihe [0,1,2] -> Linie weiter nach oben schieben
+      case "0,1,2":
+        transformValue = "translate(-50%, -1950%) rotate(0deg)"; // Angepasst für obere Reihe
+        break;
+  
+      // Mittlere Reihe [3,4,5] -> bleibt zentriert
+      case "3,4,5":
+        transformValue = "translate(-50%, -50%) rotate(0deg)";
+        break;
+  
+      // Untere Reihe [6,7,8] -> Linie weiter nach unten schieben
+      case "6,7,8":
+        transformValue = "translate(-50%, 1850%) rotate(0deg)"; // Angepasst für untere Reihe
+        break;
+  
+      // Linke Spalte [0,3,6]
+      case "0,3,6":
+        transformValue = "translate(-83%, -50%) rotate(90deg)";
+        break;
+  
+      // Mittlere Spalte [1,4,7]
+      case "1,4,7":
+        transformValue = "translate(-50%, -50%) rotate(90deg)";
+        break;
+  
+      // Rechte Spalte [2,5,8]
+      case "2,5,8":
+        transformValue = "translate(-17%, -50%) rotate(90deg)";
+        break;
+  
+      // Diagonale [0,4,8]
+      case "0,4,8":
+        transformValue = "translate(-50%, -50%) rotate(45deg)";
+        break;
+  
+      // Diagonale [2,4,6]
+      case "2,4,6":
+        transformValue = "translate(-50%, -50%) rotate(-45deg)";
+        break;
+    }
+  
+    // Transformationswert anwenden
+    winLineDiv.style.transform = transformValue;
   }
   
 
-/**
- * Wird aufgerufen, wenn eine Zelle angeklickt wird (durch onclick im HTML).
- * index: Index der angeklickten Zelle (0 bis 8).
- */
-function handleCellClick(index) {
-    // Wenn das Feld schon belegt ist oder das Spiel beendet, nichts tun
-    if (fields[index] !== null || !gameActive) {
-        return;
-    }
-
-    // Feld mit dem Zeichen des aktuellen Spielers füllen
-    fields[index] = currentPlayer;
-    // Spielfeld neu rendern
-    render();
-    // Prüfen, ob das Spiel gewonnen wurde oder ein Unentschieden vorliegt
-    checkGameStatus();
-
-    // Spieler wechseln, wenn das Spiel weitergeht
-    if (gameActive) {
-        currentPlayer = currentPlayer === "X" ? "O" : "X";
-        statusText.textContent = `Spieler ${currentPlayer} ist am Zug`;
-    }
-}
-
-/**
- * Prüft, ob jemand gewonnen hat oder ob es unentschieden ist.
- */
-function checkGameStatus() {
-    let roundWon = false;
-
-    for (let i = 0; i < winningConditions.length; i++) {
-        const [a, b, c] = winningConditions[i];
-        const valA = fields[a];
-        const valB = fields[b];
-        const valC = fields[c];
-
-        // Wenn eines der Felder leer ist, kann diese Kombination kein Sieg sein
-        if (valA === null || valB === null || valC === null) {
-            continue;
-        }
-
-        // Wenn alle drei gleich sind, ist das Spiel gewonnen
-        if (valA === valB && valB === valC) {
-            roundWon = true;
-            break;
-        }
-    }
-
-    if (roundWon) {
-        statusText.textContent = `Spieler ${currentPlayer} hat gewonnen!`;
-        gameActive = false;
-        return;
-    }
-
-    // Falls alle Felder belegt sind und kein Gewinner, dann Unentschieden
-    if (!fields.includes(null)) {
-        statusText.textContent = "Unentschieden!";
-        gameActive = false;
-    }
-}
-
-/**
- * Setzt das Spiel zurück, wenn der "Neues Spiel"-Button geklickt wird.
- */
+/** Spiel zurücksetzen */
 function resetGame() {
-    fields = [null, null, null, null, null, null, null, null, null];
-    currentPlayer = "X";
-    gameActive = true;
-    statusText.textContent = `Spieler ${currentPlayer} ist am Zug`;
-    render();
-}
+  fields = [null, null, null, null, null, null, null, null, null];
+  currentPlayer = "X";
+  gameActive = true;
+  statusText.textContent = `Spieler ${currentPlayer} ist am Zug`;
 
-// Beim Laden der Seite einmalig rendern, damit alle Felder leer sind
-render();
+  // Gewinnlinie ausblenden
+  winLineDiv.style.display = "none";
+
+  render();
+}
